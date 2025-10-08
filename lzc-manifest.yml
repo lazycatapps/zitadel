@@ -1,0 +1,203 @@
+# app 的唯一 id,上架到商店需要保证不要冲突,尽量使用开发者自己的域名作为后缀.
+package: cloud.lazycat.app.liu.zitadel
+# app 的版本
+version: 4.3.1
+
+name: zitadel
+keyword: identity,iam,auth,zitadel
+description: Open-source identity and access management platform for modern applications.
+
+# 软件名称,会显示在启动器之类的地方
+locales:
+  zh:
+    name: Zitadel 身份平台
+    description: |
+      ## Zitadel 身份与访问管理
+
+      **官方网站：** https://zitadel.com/
+      **仓库地址：** https://github.com/lazycatapps/zitadel.git
+
+      Zitadel 是一个开源的身份与访问管理平台（IAM），为现代应用程序提供企业级的认证和授权解决方案。它支持多租户架构，提供完整的 OAuth 2.0、OpenID Connect (OIDC)、SAML 2.0 等标准协议，帮助团队快速构建安全可靠的登录与授权体系。
+
+      ## 主要功能
+
+      - 🔐 **多协议支持**：OAuth 2.0、OpenID Connect、SAML 2.0
+      - 👥 **多租户架构**：支持多组织、多项目的独立管理
+      - 🎨 **自定义登录界面**：提供 Login UI v2，支持品牌定制
+      - 🔑 **多因素认证**：支持 TOTP、WebAuthn、短信等多种认证方式
+      - 👤 **用户管理**：完整的用户生命周期管理和权限控制
+      - 📊 **审计日志**：详细的操作审计和安全事件追踪
+      - 🔌 **API 优先**：提供完整的 REST 和 gRPC API
+      - 🌐 **国际化支持**：支持多语言界面
+      - 🚀 **高性能**：基于 Go 语言开发，性能卓越
+      - 📱 **移动友好**：支持移动应用的认证集成
+
+      ## 默认账号信息
+
+      - **默认管理员账号**：`admin@lazycat.{应用域名}` （例如：`admin@lazycat.zitadel.${LAZYCAT_BOX_NAME}.heiyu.space`）
+      - **默认密码**：`Admin@123456`
+      - **默认组织名称**：`Lazycat`
+
+      ⚠️ **重要**：
+      - 登录用户名会自动添加 `@组织名.域名` 后缀
+      - 首次登录后请立即修改默认密码以确保安全！
+
+      ## 使用场景
+
+      - 企业单点登录 (SSO)
+      - 多租户 SaaS 应用认证
+      - API 访问控制
+      - 微服务安全网关
+      - B2B/B2C 身份管理
+  en:
+    name: Zitadel
+    description: |
+      ## Zitadel Identity and Access Management
+
+      **Official Site:** https://zitadel.com/
+      **Repository:** https://github.com/lazycatapps/zitadel.git
+
+      Zitadel is an open-source identity and access management (IAM) platform that provides enterprise-grade authentication and authorization solutions for modern applications. It supports multi-tenant architecture and delivers complete OAuth 2.0, OpenID Connect (OIDC), and SAML 2.0 standard protocols, enabling teams to rapidly build secure and reliable login and authorization systems.
+
+      ## Key Features
+
+      - 🔐 **Multi-Protocol Support**: OAuth 2.0, OpenID Connect, SAML 2.0
+      - 👥 **Multi-Tenant Architecture**: Independent management of multiple organizations and projects
+      - 🎨 **Custom Login Interface**: Provides Login UI v2 with brand customization
+      - 🔑 **Multi-Factor Authentication**: Supports TOTP, WebAuthn, SMS, and other authentication methods
+      - 👤 **User Management**: Complete user lifecycle management and access control
+      - 📊 **Audit Logging**: Detailed operation audit and security event tracking
+      - 🔌 **API First**: Provides complete REST and gRPC APIs
+      - 🌐 **Internationalization**: Multi-language interface support
+      - 🚀 **High Performance**: Built with Go language for exceptional performance
+      - 📱 **Mobile Friendly**: Supports authentication integration for mobile applications
+
+      ## Default Credentials
+
+      - **Default Admin Username**: `admin@lazycat.{app-domain}` (e.g., `admin@lazycat.zitadel.${LAZYCAT_BOX_NAME}.heiyu.space`)
+      - **Default Password**: `Admin@123456`
+      - **Default Organization Name**: `Lazycat`
+
+      ⚠️ **Important**:
+      - The login username will automatically append `@org-name.domain` suffix
+      - Please change the default password immediately after first login to ensure security!
+
+      ## Use Cases
+
+      - Enterprise Single Sign-On (SSO)
+      - Multi-tenant SaaS application authentication
+      - API access control
+      - Microservices security gateway
+      - B2B/B2C identity management
+
+# 软件本身的 license
+license: https://github.com/zitadel/zitadel?tab=AGPL-3.0-1-ov-file
+
+# 软件的主页,会在商店等地方体现
+homepage: https://zitadel.com/
+
+# lpk 的作者,会在商店等地方体现
+author: liu
+
+ext_config:
+  disable_grpc_web_on_root: true # 不劫持 grpc-web 流量 (配合新版 sdk)
+
+# application 作为一个特殊的 container 运行，对应的 service 名称为固定的`app`， 其他 service 可以通过此名称与 app 进行通讯
+application:
+  #是否存在后台任务， 若存在则系统不会对此 app 进行主动休眠等操作
+  background_task: true
+
+  # 期望的 app 域名，如果系统中已经有对应域名则会提示用户选择其他域名。 最终 app 分配到的域名以/lzcapp/run/app.subdomain 为准
+  subdomain: zitadel
+
+  # 没有使用 routes 是因为需要把用户访问的 host 传递给 zitadel
+  upstreams:
+    - location: /ui/v2/login/
+      backend: http://login:3000/ui/v2/login/
+      use_backend_host: false
+    - location: /
+      backend: http://zitadel:8080
+      use_backend_host: false
+
+  public_path:
+    - /                         # 无需登录即可访问
+
+  depends_on:
+    - zitadel
+
+  # 是否启用多实例
+  multi_instance: false
+
+services:
+  zitadel:
+    # lzc-cli appstore copy-image ghcr.io/zitadel/zitadel:latest
+    image: registry.lazycat.cloud/liu/zitadel/zitadel:6d88cd0b7fbc4535
+    user: root
+    command: start-from-init --masterkey "MasterkeyNeedsToHave32Characters"
+    environment:
+      - ZITADEL_EXTERNALPORT=443
+      - ZITADEL_EXTERNALDOMAIN=${LAZYCAT_APP_DOMAIN}
+      - ZITADEL_EXTERNALSECURE=true
+      - ZITADEL_EXTERNALPROTOCOL=https
+      - ZITADEL_TLS_ENABLED=false
+      - ZITADEL_DATABASE_POSTGRES_HOST=db
+      - ZITADEL_DATABASE_POSTGRES_PORT=5432
+      - ZITADEL_DATABASE_POSTGRES_DATABASE=zitadel
+      - ZITADEL_DATABASE_POSTGRES_ADMIN_USERNAME=postgres
+      - ZITADEL_DATABASE_POSTGRES_ADMIN_PASSWORD=postgres
+      - ZITADEL_DATABASE_POSTGRES_ADMIN_SSL_MODE=disable
+      - ZITADEL_DATABASE_POSTGRES_USER_USERNAME=zitadel
+      - ZITADEL_DATABASE_POSTGRES_USER_PASSWORD=zitadel
+      - ZITADEL_DATABASE_POSTGRES_USER_SSL_MODE=disable
+      - ZITADEL_FIRSTINSTANCE_ORG_NAME=Lazycat
+      - ZITADEL_FIRSTINSTANCE_ORG_HUMAN_USERNAME=admin@lazycat.${LAZYCAT_APP_DOMAIN}
+      - ZITADEL_FIRSTINSTANCE_ORG_HUMAN_PASSWORD=Admin@123456
+      - ZITADEL_FIRSTINSTANCE_ORG_HUMAN_PASSWORDCHANGEREQUIRED=false
+      - ZITADEL_FIRSTINSTANCE_LOGINCLIENTPATPATH=/current-dir/login-client.pat
+      - ZITADEL_FIRSTINSTANCE_ORG_LOGINCLIENT_MACHINE_USERNAME=login-client
+      - ZITADEL_FIRSTINSTANCE_ORG_LOGINCLIENT_MACHINE_NAME=Automatically Initialized IAM_LOGIN_CLIENT
+      - ZITADEL_FIRSTINSTANCE_ORG_LOGINCLIENT_PAT_EXPIRATIONDATE=2029-01-01T00:00:00Z
+      - ZITADEL_DEFAULTINSTANCE_FEATURES_LOGINV2_REQUIRED=true
+      - ZITADEL_DEFAULTINSTANCE_FEATURES_LOGINV2_BASEURI=https://${LAZYCAT_APP_DOMAIN}/ui/v2/login
+      - ZITADEL_OIDC_DEFAULTLOGINURLV2=https://${LAZYCAT_APP_DOMAIN}/ui/v2/login/login?authRequest=
+      - ZITADEL_OIDC_DEFAULTLOGOUTURLV2=https://${LAZYCAT_APP_DOMAIN}/ui/v2/login/logout?post_logout_redirect=
+      - ZITADEL_SAML_DEFAULTLOGINURLV2=https://${LAZYCAT_APP_DOMAIN}/ui/v2/login/login?samlRequest=
+      - ZITADEL_LOG_LEVEL=debug
+      - ZITADEL_LOGSTORE_ACCESS_STDOUT_ENABLED=true
+    depends_on:
+      - db
+    binds:
+      - /lzcapp/var/current-dir:/current-dir
+    health_check:
+      test:
+        - CMD
+        - /app/zitadel
+        - ready
+      start_period: 10s
+
+  login:
+    # lzc-cli appstore copy-image ghcr.io/zitadel/zitadel-login:latest
+    image: registry.lazycat.cloud/liu/zitadel/zitadel-login:586b0085139187a3
+    user: root
+    environment:
+      - ZITADEL_API_URL=https://${LAZYCAT_APP_DOMAIN}
+      - NEXT_PUBLIC_BASE_PATH=/ui/v2/login
+      - ZITADEL_SERVICE_USER_TOKEN_FILE=/current-dir/login-client.pat
+    depends_on:
+      - zitadel
+    binds:
+      - /lzcapp/var/current-dir:/current-dir
+
+  db:
+    # lzc-cli appstore copy-image postgres:17-alpine
+    image: registry.lazycat.cloud/liu/library/postgres:cf54e1c33a8a3b2d
+    environment:
+      - PGUSER=postgres
+      - POSTGRES_PASSWORD=postgres
+    binds:
+      - /lzcapp/var/data:/var/lib/postgresql/data
+    health_check:
+      test:
+        - CMD-SHELL
+        - pg_isready -d zitadel -U postgres
+      start_period: 20s
